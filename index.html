@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сайт с регистрацией и личным кабинетом</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #9face6);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        h1, h2 { color: #333; }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        button {
+            padding: 10px;
+            margin-top: 10px;
+            width: 100%;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        button:hover {
+            background-color: #218838;
+            box-shadow: 0 0 20px rgba(40, 167, 69, 0.8);
+        }
+        input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .hidden { display: none; }
+        .alert { color: red; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="home">
+    <h1>Добро пожаловать на сайт!</h1>
+    <button onclick="showRegisterForm()">Регистрация</button>
+    <button onclick="showLoginForm()">Вход</button>
+</div>
+
+<div class="container hidden" id="register">
+    <h2>Регистрация</h2>
+    <input type="text" id="registerUsername" placeholder="Логин" required>
+    <input type="password" id="registerPassword" placeholder="Пароль" required>
+    <button onclick="register()">Зарегистрироваться</button>
+    <button onclick="showHome()">Назад</button>
+</div>
+
+<div class="container hidden" id="login">
+    <h2>Вход</h2>
+    <input type="text" id="loginUsername" placeholder="Логин" required>
+    <input type="password" id="loginPassword" placeholder="Пароль" required>
+    <button onclick="login()">Войти</button>
+    <button onclick="showHome()">Назад</button>
+</div>
+
+<div class="container hidden" id="dashboard">
+    <h2>Личный кабинет</h2>
+    <p>Добро пожаловать, <span id="userName"></span>!</p>
+    <button onclick="logout()">Выход</button>
+</div>
+
+<script>
+    function showHome() {
+        updateVisibility('home');
+    }
+
+    function showRegisterForm() {
+        updateVisibility('register');
+    }
+
+    function showLoginForm() {
+        updateVisibility('login');
+    }
+
+    function updateVisibility(section) {
+        const sections = ['home', 'register', 'login', 'dashboard'];
+        sections.forEach(id => {
+            const element = document.getElementById(id);
+            if (id === section) {
+                element.classList.remove('hidden');
+                element.classList.add('show');
+            } else {
+                element.classList.remove('show');
+                setTimeout(() => {
+                    element.classList.add('hidden');
+                }, 300);
+            }
+        });
+    }
+
+    function register() {
+        const username = document.getElementById('registerUsername').value;
+        const password = document.getElementById('registerPassword').value;
+
+        if (!username || !password) {
+            alert('Заполните все поля');
+            return;
+        }
+
+        const users = JSON.parse(localStorage.getItem('users')) || {};
+
+        if (users[username]) {
+            alert('Пользователь с таким логином уже существует!');
+            return;
+        }
+
+        users[username] = password;
+        localStorage.setItem('users', JSON.stringify(users));
+        alert('Регистрация прошла успешно!');
+        showHome();
+    }
+
+    function login() {
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+
+        const users = JSON.parse(localStorage.getItem('users')) || {};
+
+        if (users[username] && users[username] === password) {
+            localStorage.setItem('currentUser', username); // Сохраняем текущего пользователя
+            document.getElementById('userName').innerText = username;
+            updateVisibility('dashboard');
+        } else {
+            alert('Неверный логин или пароль.');
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('currentUser'); // Удаляем текущего пользователя
+        alert('Вы вышли из системы.');
+        showHome();
+    }
+
+    // Проверка состояния пользователя при загрузке страницы
+    window.onload = function() {
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            document.getElementById('userName').innerText = currentUser;
+            updateVisibility('dashboard');
+        } else {
+            showHome();
+        }
+    }
+</script>
+
+</body>
+</html>
